@@ -1,14 +1,17 @@
 const express = require('express');
-const app = express()
+const app = express();
 const bcrypt =require('bcrypt');
-const {authUser,authAdmin} = require('./middlewares/auth')
-const connectDb = require('./config/database')
+const cookieParser = require('cookie-parser');
+const jwt =require('jsonwebtoken');
+const {authUser} = require('./middlewares/auth');
+const connectDb = require('./config/database');
 const User = require('./models/User');
 const isValidate = require('./utils/validate');
 
 
 app.use(express.json())
-
+app.use(cookieParser())
+const SECRETE_KEY = "MOHAMMAD@1603$2002";
 app.post('/signup',async (req,res)=>{
     try{
        const{firstName,lastName,emailId,password} = req.body;
@@ -33,73 +36,33 @@ app.post('/signup',async (req,res)=>{
     }
 })
 
-app.post('/login', async(req,res)=>{
+app.post('/login',async(req,res)=>{
 
     try{
         const{emailId,password} = req.body;
-    const user = await User.findOne({emailId:emailId})
-    if(!user){
-        throw new Error ("Invalid credentials!" )
-    }
-    const isPassword= await bcrypt.compare(password,user.password)
-    if(!isPassword){
-        throw new Error('Invalid credentials!');
-    }
-    res.send('logged in successfully !');
-
-    }
-    catch(err){
-        res.send('ERROR : '+err.message)
-    }
-    
-
-})
-
-
-app.get('/user',async (req,res)=>{
-    const userEmail = req.body.emailId
-    const users = await User.find({emailId:userEmail})
-    if(users.length ===0){
-        res.send('user not found')
-    }
-    else{
-        res.send(users)
-    }
-
-})
-
-app.patch('/user', async(req,res)=>{
-    const userId= req.body.userId;
-    try{
-        const Allowed=["firstName","gender","age","skills","photoURl","userId"]
-        const isAllowed = Object.keys(req.body).every((i)=>Allowed.includes(i))
-        if(!isAllowed){
-            throw new Error('Update  not Allowed ');
-
+        const user = await User.findOne({emailId:emailId})
+        if(!user){
+            throw new Error ("Invalid credentials!" )
         }
-        await User.findByIdAndUpdate({_id:userId},req.body);
-        res.send('The data updated successfully!')
+        const isPassword= user.validatePassword(password);
+        if(!isPassword){
+            throw new Error('Invalid credentials!');
+        }
+        //generate the jwt token
+        const token = user.getjwt();
+        res.cookie("token",token).send('logged in successful!')
     }
-    catch(err){
-        res.status(500).send('Something went wrong '+ err.message);
-    }
-
-
-})
-
-app.delete('/user', async(req,res)=>{
-    try{
-        const userId =req.body.userId;
-        await User.findByIdAndDelete({_id:userId})
-        res.send('The data deleted sucessfully! ');
-    }
-    catch(err){
-        res.send('the data was not deleted '+err.message)
+        catch(err){
+            res.send('ERROR : '+err.message)
     }
     
 
 })
 
+app.get('/profile',authUser,async(req,res)=>{
+        const user = req.user;
+        res.send(user);
+})
 
 
 

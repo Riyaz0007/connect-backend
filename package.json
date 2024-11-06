@@ -1,0 +1,23 @@
+{
+  "name": "devtinder",
+  "version": "1.0.0",
+  "description": "This is the web app for devolopers to connect each other",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon src/app.js"
+  },
+  "keywords": [
+    "node.js",
+    "javascript",
+    "express.js",
+    "mongoDB"
+  ],
+  "author": "Mohammad Riyaz",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "mongoose": "^8.8.0",
+    "nodemon": "^3.1.7",
+    "validator": "^13.12.0"
+  }
+}

@@ -39,11 +39,11 @@ app.post('/login', async(req,res)=>{
         const{emailId,password} = req.body;
     const user = await User.findOne({emailId:emailId})
     if(!user){
-        throw new Error ("user doesn't exist !" )
+        throw new Error ("Invalid credentials!" )
     }
     const isPassword= await bcrypt.compare(password,user.password)
     if(!isPassword){
-        throw new Error('Invalid password!');
+        throw new Error('Invalid credentials!');
     }
     res.send('logged in successfully !');
 

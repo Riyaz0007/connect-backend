@@ -24,7 +24,7 @@ app.post('/signup',async (req,res)=>{
     }
 })
 
-app.get('/feed',async (req,res)=>{
+app.get('/user',async (req,res)=>{
     const userEmail = req.body.emailId
     const users = await User.find({emailId:userEmail})
     if(users.length ===0){
@@ -52,6 +52,19 @@ app.patch('/user', async(req,res)=>{
         res.status(500).send('Something went wrong '+ err.message);
     }
 
+
+})
+
+app.delete('/user', async(req,res)=>{
+    try{
+        const userId =req.body.userId;
+        await User.findByIdAndDelete({_id:userId})
+        res.send('The data deleted sucessfully! ');
+    }
+    catch(err){
+        res.send('the data was not deleted '+err.message)
+    }
+    
 
 })
 

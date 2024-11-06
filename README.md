@@ -1,2 +1,2 @@
 # devTinder
-This is a web app for devolopers to connect with each other
+This is a repo of the learnings of the express.js and mongo

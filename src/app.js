@@ -1,26 +1,35 @@
 const express = require('express');
 const app = express()
+const bcrypt =require('bcrypt');
 const {authUser,authAdmin} = require('./middlewares/auth')
 const connectDb = require('./config/database')
 const User = require('./models/User');
-
+const isValidate = require('./utils/validate');
 
 
 app.use(express.json())
 
 app.post('/signup',async (req,res)=>{
     try{
-       const data = req.body;
-       const skills = req.body.skills;
-       if(skills?.length>10){
-        throw new Error('Max 10 skills are allowed');
-       }
-       const user = new User(data);
+       const{firstName,lastName,emailId,password} = req.body;
+       //validatong the data send by the client
+       isValidate(req);
+       //hashing the password
+
+       const hashedPassword = await bcrypt.hash(password,10)
+
+
+       const user = new User({
+        firstName,
+        lastName,
+        emailId,
+        password:hashedPassword
+       });
        await user.save()
        res.send('the data added successfully!');
     }
     catch(err){
-        res.send("The data was not added"+ err.message)
+        res.send("ERROR : "+ err.message)
     }
 })
 

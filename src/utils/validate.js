@@ -13,4 +13,13 @@ const isValidate = (req)=>{
     }
 
 }
-module.exports = isValidate;
+
+const isProfileValidate = (req)=>{
+    const ALLOWED=["firstName","skills","lastName","gender","photoUrl"]
+    const isAllowed= Object.keys(req.body).every((item)=>{
+        ALLOWED.includes(item)
+    })
+    return isAllowed;
+
+}
+module.exports = {isValidate,isProfileValidate};

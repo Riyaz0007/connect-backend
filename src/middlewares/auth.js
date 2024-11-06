@@ -19,7 +19,7 @@ const authUser= async (req,res,next)=>{
         next();
     }
     catch(err){
-        throw new Error('ERROR : '+ err.message)
+        res.send('ERROR : '+ err.message)
     }
 }
 module.exports={

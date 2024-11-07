@@ -1,45 +1,65 @@
-const express =require('express');
+const express = require('express');
 const { authUser } = require('../middlewares/auth');
 const { ConnectionRequest } = require('../models/ConnnectionRequests');
-const User = require('../models/User');
-const connectionsRouter = express.Router();
+const linkRouter = express.Router();
 
-connectionsRouter.post("/request/:status/:toUserId",authUser,async(req,res)=>{
-    try{
-        const fromUserId=req.user._id;
-        const{toUserId,status}=req.params;
-        if(!(["ignore","interest"].includes(status))){
-            throw new Error(` Invalid status!`);
-        }
-        const existingConnection = await ConnectionRequest.findOne({
-            $or:[{fromUserId,toUserId},{fromUserId:toUserId,toUserId:fromUserId}],
-        })
-        if(existingConnection){
-            throw new Error('The connection already sent!')
-        }
-        const existingUser= await User.findOne({_id:toUserId});
+const ALLOWED_DATA = ["firstName", "lastName", "gender", "skills"];
 
-        if(!existingUser){
-            throw new Error('the user does not exists!');
-        }
-        const connection = new ConnectionRequest({
-            fromUserId,
-            toUserId,
-            status
+linkRouter.get('/connections', authUser, async (req, res) => {
+    try {
+        const loggedInUser = req.user;
+
+        // Fetch the connection requests where status is 'accept'
+        const connections = await ConnectionRequest.find({
+            $or:[
+                { fromUserId: loggedInUser._id, status: "accept" },
+                { toUserId: loggedInUser._id, status: "accept" }
+            ]
         })
-        const data = await connection.save();
+        .populate("fromUserId", ALLOWED_DATA)
+        .populate("toUserId", ALLOWED_DATA); // Populate 'toUserId' as well if needed
+
+        // Check if no connections found
+        if (connections.length === 0) {
+            return res.status(404).json({
+                message: 'No connections found.'
+            });
+        }
+
+        // Respond with the found connections
         res.json({
-            message:"connection sent successfully!",
-            data:data
-        })}
+            data: connections
+        });
+
+    } catch (err) {
+        console.error(err); // Log error for debugging
+        res.status(500).json({
+            message: 'Server error. Please try again later.',
+            error: err.message
+        });
+    }
+});
+linkRouter.get('/requests',authUser,async(req,res)=>{
+    try{
+        const loggesInUser = req.user;
+        const connection= await ConnectionRequest.find({
+            toUserId:loggesInUser._id,
+            status:"interest"
+        })
+        if(connection.length===0){
+            throw new Error('connection not found')
+        }
+        res.json({
+            data:connection
+        })
+
+    }
     catch(err){
         res.json({
-            message:"ERROR : "+ err.message
+            message:err.message
         })
     }
+
+
 })
-
-
-
-
-module.exports={connectionsRouter}
+module.exports = { linkRouter };

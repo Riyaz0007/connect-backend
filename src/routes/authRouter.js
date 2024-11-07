@@ -2,7 +2,7 @@ const express = require('express');
 const authRouter = express.Router();
 const bcrypt = require('bcrypt');
 const User =require('../models/User');
-const isValidate = require('../utils/validate');
+const {isValidate} = require('../utils/validate');
 
 
 authRouter.post('/login',async(req,res)=>{
@@ -31,6 +31,7 @@ authRouter.post('/signup',async (req,res)=>{
     try{
        const{firstName,lastName,emailId,password} = req.body;
        //validatong the data send by the client
+
        isValidate(req);
        //hashing the password
 
